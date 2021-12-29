@@ -3,7 +3,7 @@ import time
 import random
 from controller_handler import Controller_handler, Controller_joystick
 from pynput import keyboard
-from arduino import setup
+from arduino import setup, update_motors, reset_motors, turn_off_motors
 
 test_mode = True;
 gamepad = None
@@ -19,28 +19,8 @@ joystick_handler_left = None;
 joystick_handler_right = None;
 arduino = setup()
 
-def write_read(x):
-    arduino.write(bytes(x , 'utf-8'))
-    print(x)
-
-
-
-def motors_value(small_motor, large_motor):
-    always_to_max = False;
-
-    if always_to_max == True:
-        if small_motor > 0:
-            small_motor = 255;
-
-        if large_motor > 0:
-            large_motor = 255;
-
-
-    return str(small_motor) + ":" + str(large_motor);
-
-
 def my_callback(client, target, large_motor, small_motor, led_number, user_data):
-    write_read(motors_value(small_motor, large_motor))
+    update_motors(small_motor, large_motor)
     #write_read("2" + ":" + str(large_motor))
     #print("work")
 
@@ -184,9 +164,9 @@ def create_listener():
 
 
 def notify():
-    write_read(motors_value(255, 0))
+    update_motors(255, 0)
     time.sleep(0.25)
-    write_read(motors_value(0, 0))
+    update_motors(0, 0)
 
 def on_lock_press(key):
     global listener
@@ -194,6 +174,7 @@ def on_lock_press(key):
 
 
     if key == keyboard.Key.f12:
+        turn_off_motors()
         print("Quitting")
         quit()
 
@@ -204,13 +185,13 @@ def on_lock_press(key):
                 motor = '2'
 
             time.sleep(0.5)
-            write_read(motors_value(0, 0))
+            update_motors(0, 0)
             time.sleep(0.5)
-            write_read(motors_value(128, 0))
+            update_motors(128, 0)
             time.sleep(0.5)
-            write_read(motors_value(255, 0))
+            update_motors(255, 0)
             time.sleep(0.5)
-            write_read(motors_value(0, 0))
+            update_motors(0, 0)
             time.sleep(0.5)
 
     if key == keyboard.Key.f9:
@@ -221,6 +202,7 @@ def on_lock_press(key):
         else:
             print("Disabled")
             notify()
+            turn_off_motors()
             create_listener_lock()
             return False
 
